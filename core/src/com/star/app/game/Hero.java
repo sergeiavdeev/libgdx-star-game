@@ -42,7 +42,7 @@ public class Hero {
 
     public void update(float dt) {
         fireTimer += dt;
-        if (Gdx.input.isKeyPressed(Input.Keys.E)) {
+        if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
             if (fireTimer > 0.2f) {
                 fireTimer = 0.0f;
                 gc.getBulletController().setup(position.x, position.y,
