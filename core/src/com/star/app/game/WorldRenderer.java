@@ -27,7 +27,7 @@ public class WorldRenderer {
         gc.getBulletController().render(batch);
         gc.getHero().render(batch);
         sb.setLength(0);
-        sb.append("SCORE: ").append(gc.getHero().getScoreView());
+        sb.append("SCORE: ").append(gc.getHero().getScoreView()).append(" DAMAGE: ").append(gc.getHero().getHp());
         font32.draw(batch, sb, 20, 700);
         batch.end();
     }
