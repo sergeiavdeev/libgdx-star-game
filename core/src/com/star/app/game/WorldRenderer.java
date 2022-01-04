@@ -25,10 +25,11 @@ public class WorldRenderer {
         gc.getBackground().render(batch);
         gc.getAsteroidController().render(batch);
         gc.getBulletController().render(batch);
+        gc.getParticleController().render(batch);
+        gc.getThingController().render(batch);
         gc.getHero().render(batch);
-        sb.setLength(0);
-        sb.append("SCORE: ").append(gc.getHero().getScoreView()).append(" DAMAGE: ").append(gc.getHero().getHp());
-        font32.draw(batch, sb, 20, 700);
+        gc.getHero().renderGUI(batch, font32);
+
         batch.end();
     }
 }
