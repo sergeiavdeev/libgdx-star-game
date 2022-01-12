@@ -1,6 +1,5 @@
 package com.star.app.game;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Circle;
@@ -50,6 +49,10 @@ public class Asteroid implements Poolable {
 
     public Vector2 getVelocity() {
         return velocity;
+    }
+
+    public float getScale() {
+        return scale;
     }
 
     public Asteroid(GameController gc) {
