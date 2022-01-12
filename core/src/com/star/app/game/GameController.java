@@ -9,9 +9,13 @@ public class GameController {
     private AsteroidController asteroidController;
     private BulletController bulletController;
     private ParticleController particleController;
-    private ThingController thingController;
+    private PowerUpsController powerUpsController;
     private Hero hero;
     private Vector2 tempVec;
+
+    public PowerUpsController getPowerUpsController() {
+        return powerUpsController;
+    }
 
     public ParticleController getParticleController() {
         return particleController;
@@ -33,17 +37,13 @@ public class GameController {
         return bulletController;
     }
 
-    public ThingController getThingController() {
-        return thingController;
-    }
-
     public GameController() {
         this.background = new Background(this);
         this.hero = new Hero(this);
         this.asteroidController = new AsteroidController(this);
         this.bulletController = new BulletController(this);
         this.particleController = new ParticleController();
-        this.thingController = new ThingController();
+        this.powerUpsController = new PowerUpsController(this);
         this.tempVec = new Vector2();
 
         for (int i = 0; i < 3; i++) {
@@ -60,84 +60,66 @@ public class GameController {
         asteroidController.update(dt);
         bulletController.update(dt);
         particleController.update(dt);
-        thingController.update(dt);
+        powerUpsController.update(dt);
         checkCollisions();
     }
 
     private void checkCollisions() {
         for (int i = 0; i < asteroidController.getActiveList().size(); i++) {
             Asteroid a = asteroidController.getActiveList().get(i);
-            collisionAsteroidHerro(a);
-            for (int j = 0; j < bulletController.getActiveList().size(); j++) {
-                if(collisionAsteroidBullet(a, bulletController.getActiveList().get(j)))break;
+            if (a.getHitArea().overlaps(hero.getHitArea())) {
+                float dst = a.getPosition().dst(hero.getPosition());
+                float halfOverLen = (a.getHitArea().radius + hero.getHitArea().radius - dst) / 2;
+                tempVec.set(hero.getPosition()).sub(a.getPosition()).nor();
+                hero.getPosition().mulAdd(tempVec, halfOverLen);
+                a.getPosition().mulAdd(tempVec, -halfOverLen);
+
+                float sumScl = hero.getHitArea().radius + a.getHitArea().radius;
+                hero.getVelocity().mulAdd(tempVec, a.getHitArea().radius / sumScl * 100);
+                a.getVelocity().mulAdd(tempVec, -hero.getHitArea().radius / sumScl * 100);
+
+                if (a.takeDamage(2)) {
+                    hero.addScore(a.getHpMax() * 50);
+                }
+                hero.takeDamage(2);
             }
         }
 
-        for (int i = 0; i < thingController.getActiveList().size(); i++) {
-            collisionThingHerro(thingController.getActiveList().get(i));
-        }
-    }
 
-    private void collisionAsteroidHerro(Asteroid asteroid) {
+        for (int i = 0; i < bulletController.getActiveList().size(); i++) {
+            Bullet b = bulletController.getActiveList().get(i);
+            for (int j = 0; j < asteroidController.getActiveList().size(); j++) {
+                Asteroid a = asteroidController.getActiveList().get(j);
+                if (a.getHitArea().contains(b.getPosition())) {
 
-        if (asteroid.getHitArea().overlaps(hero.getHitArea())) {
-            float dst = asteroid.getPosition().dst(hero.getPosition());
-            float halfOverLen = (asteroid.getHitArea().radius + hero.getHitArea().radius - dst) / 2;
-            tempVec.set(hero.getPosition()).sub(asteroid.getPosition()).nor();
-            hero.getPosition().mulAdd(tempVec, halfOverLen);
-            asteroid.getPosition().mulAdd(tempVec, -halfOverLen);
+                    particleController.setup(b.getPosition().x + MathUtils.random(-4, 4), b.getPosition().y + MathUtils.random(-4, 4),
+                            b.getVelocity().x * -0.3f + MathUtils.random(-30, 30), b.getVelocity().y * -0.3f + MathUtils.random(-30, 30),
+                            0.2f, 2.2f, 1.5f,
+                            1.0f, 1.0f, 1.0f, 1,
+                            0, 0, 1, 0);
 
-            float sumScl = hero.getHitArea().radius + asteroid.getHitArea().radius;
-            hero.getVelocity().mulAdd(tempVec, asteroid.getHitArea().radius / sumScl * 100);
-            asteroid.getVelocity().mulAdd(tempVec, -hero.getHitArea().radius / sumScl * 100);
 
-            if (asteroid.takeDamage(2)) {
-                hero.addScore(asteroid.getHpMax() * 50);
-            }
-            hero.takeDamage(2);
-        }
-    }
-
-    private boolean collisionAsteroidBullet(Asteroid asteroid, Bullet bullet) {
-
-        if (asteroid.getHitArea().contains(bullet.getPosition())) {
-
-            particleController.setup(bullet.getPosition().x +MathUtils.random(-4, 4), bullet.getPosition().y + MathUtils.random(-4, 4),
-                    bullet.getVelocity().x * -0.3f + MathUtils.random(-30, 30), bullet.getVelocity().y * -0.3f + MathUtils.random(-30, 30),
-                    0.2f, 2.2f, 1.5f,
-                    1.0f, 1.0f, 1.0f, 1,
-                    0, 0, 1, 0);
-
-            bullet.deactivate();
-            if (asteroid.takeDamage(1)) {
-                hero.addScore(asteroid.getHpMax() * 100);
-                int chance = MathUtils.random(0,(int)(100 * asteroid.getScale()) - 1);
-                if(chance < 10) {
-                    thingController.setup(asteroid.getPosition(), asteroid.getVelocity());
+                    b.deactivate();
+                    if (a.takeDamage(hero.getCurrentWeapon().getDamage())) {
+                        hero.addScore(a.getHpMax() * 100);
+                        for (int k = 0; k < 3; k++) {
+                            powerUpsController.setup(a.getPosition().x, a.getPosition().y,
+                                    a.getScale() * 0.25f);
+                        }
+                    }
+                    break;
                 }
             }
-            return true;
         }
-        return false;
-    }
 
-    private void collisionThingHerro(Thing thing) {
-
-        if (thing.getHitArea().overlaps(hero.getHitArea())) {
-            thing.deactivate();
-            switch (thing.getType()) {
-                case HEALTH:
-                    hero.addHealth(10);
-                    break;
-                case BULLET:
-                    hero.addBullet(50);
-                    break;
-                case MONEY:
-                    hero.addMoney(5);
-                    break;
-                default:
-                    break;
+        for (int i = 0; i < powerUpsController.getActiveList().size(); i++) {
+            PowerUp p = powerUpsController.getActiveList().get(i);
+            if(hero.getHitArea().contains(p.getPosition())){
+                hero.consume(p);
+                particleController.getEffectBuilder().takePowerUpEffect(p.getPosition().x,p.getPosition().y );
+                p.deactivate();
             }
         }
+
     }
 }

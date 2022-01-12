@@ -10,7 +10,6 @@ import com.star.app.screen.ScreenManager;
 import com.star.app.screen.utils.Assets;
 
 public class Asteroid implements Poolable {
-
     private GameController gc;
     private TextureRegion texture;
     private Vector2 position;
@@ -25,6 +24,10 @@ public class Asteroid implements Poolable {
 
     private final float BASE_SIZE = 256;
     private final float BASE_RADIUS = BASE_SIZE / 2;
+
+    public float getScale() {
+        return scale;
+    }
 
     public int getHpMax() {
         return hpMax;
@@ -49,10 +52,6 @@ public class Asteroid implements Poolable {
 
     public Vector2 getVelocity() {
         return velocity;
-    }
-
-    public float getScale() {
-        return scale;
     }
 
     public Asteroid(GameController gc) {

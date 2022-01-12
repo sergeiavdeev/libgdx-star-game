@@ -1,7 +1,9 @@
 package com.star.app.game;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.star.app.game.helpers.ObjectPool;
+import com.star.app.screen.utils.Assets;
 
 public class AsteroidController extends ObjectPool<Asteroid> {
     private GameController gc;

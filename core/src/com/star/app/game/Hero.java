@@ -13,8 +13,7 @@ import com.star.app.screen.ScreenManager;
 import com.star.app.screen.utils.Assets;
 
 public class Hero {
-
-    private final GameController gc;
+    private GameController gc;
     private TextureRegion texture;
     private Vector2 position;
     private Vector2 velocity;
@@ -28,7 +27,11 @@ public class Hero {
     private StringBuilder sb;
     private Circle hitArea;
     private Weapon currentWeapon;
-    private int currentMoney;
+    private int money;
+
+    public Weapon getCurrentWeapon() {
+        return currentWeapon;
+    }
 
     public float getAngle() {
         return angle;
@@ -50,21 +53,6 @@ public class Hero {
         score += amount;
     }
 
-    public void addHealth(int amount) {
-        hp += amount;
-        if (hp > hpMax) {
-            hp = hpMax;
-        }
-    }
-
-    public void addBullet(int amount) {
-        currentWeapon.addBullets(amount);
-    }
-
-    public void addMoney(int amount) {
-        currentMoney += amount;
-    }
-
     public Hero(GameController gc) {
         this.gc = gc;
         this.texture = Assets.getInstance().getAtlas().findRegion("ship");
@@ -74,7 +62,6 @@ public class Hero {
         this.enginePower = 500.0f;
         this.hpMax = 100;
         this.hp = hpMax;
-        this.currentMoney = 0;
         this.sb = new StringBuilder();
         this.hitArea = new Circle(position, 29);
         this.currentWeapon = new Weapon(gc, this, "Laser", 0.1f, 1, 600.0f, 300,
@@ -89,7 +76,8 @@ public class Hero {
         sb.setLength(0);
         sb.append("SCORE: ").append(scoreView).append("\n");
         sb.append("HP: ").append(hp).append(" / ").append(hpMax).append("\n");
-        sb.append("BULLETS: ").append(currentWeapon.getCurBullets()).append(" / ").append(currentWeapon.getMaxBullets()).append("\n");
+        sb.append("BULLERS: ").append(currentWeapon.getCurBullets()).append(" / ").append(currentWeapon.getMaxBullets()).append("\n");
+        sb.append("MONEY: ").append(money).append("\n");
         font.draw(batch, sb, 20, 700);
     }
 
@@ -101,6 +89,20 @@ public class Hero {
 
     public void takeDamage(int amount) {
         hp -= amount;
+    }
+
+    public void consume(PowerUp p) {
+        switch (p.getType()) {
+            case MEDKIT:
+                hp += p.getPower();
+                break;
+            case MONEY:
+                money += p.getPower();
+                break;
+            case AMMOS:
+                currentWeapon.addAmmos( p.getPower()) ;
+                break;
+        }
     }
 
     public void update(float dt) {
