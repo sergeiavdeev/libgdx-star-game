@@ -43,6 +43,7 @@ public class Hero {
     private Shop shop;
     private Weapon[] weapons;
     private int weaponNum;
+    private Circle magneticArea;
 
     public Shop getShop() {
         return shop;
@@ -96,6 +97,10 @@ public class Hero {
         gc.setPause(pause);
     }
 
+    public Circle getMagneticArea() {
+        return magneticArea;
+    }
+
     public Hero(GameController gc) {
         this.gc = gc;
         this.texture = Assets.getInstance().getAtlas().findRegion("ship");
@@ -105,17 +110,19 @@ public class Hero {
         this.enginePower = 500.0f;
         this.hpMax = 100;
         this.hp = hpMax;
-        this.money = 1500;
+        this.money = 0;
         this.sb = new StringBuilder();
         this.shop = new Shop(this);
         this.hitArea = new Circle(position, 29);
         this.weaponNum = 0;
         createWeapons();
         this.currentWeapon = weapons[weaponNum];
+        this.magneticArea = new Circle(position, 150);
     }
 
     public void renderGUI(SpriteBatch batch, BitmapFont font) {
         sb.setLength(0);
+        sb.append("LEVEL: ").append(gc.getLevel()).append("\n");
         sb.append("SCORE: ").append(scoreView).append("\n");
         sb.append("HP: ").append(hp).append(" / ").append(hpMax).append("\n");
         sb.append("BULLERS: ").append(currentWeapon.getCurBullets()).append(" / ").append(currentWeapon.getMaxBullets()).append("\n");
@@ -229,6 +236,7 @@ public class Hero {
         }
         position.mulAdd(velocity, dt);
         hitArea.setPosition(position);
+        magneticArea.setPosition(position);
 
         float stopKoef = 1.0f - 0.8f * dt;
         if (stopKoef < 0.0f) {
