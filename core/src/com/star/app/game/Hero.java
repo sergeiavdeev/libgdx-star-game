@@ -13,6 +13,18 @@ import com.star.app.screen.ScreenManager;
 import com.star.app.screen.utils.Assets;
 
 public class Hero {
+    public enum Skill {
+        HP_MAX(20, 10), HP(20, 10), WEAPON(100, 1);
+
+        int cost;
+        int power;
+
+        Skill(int cost, int power) {
+            this.cost = cost;
+            this.power = power;
+        }
+    }
+
     private GameController gc;
     private TextureRegion texture;
     private Vector2 position;
@@ -28,6 +40,22 @@ public class Hero {
     private Circle hitArea;
     private Weapon currentWeapon;
     private int money;
+    private Shop shop;
+    private Weapon[] weapons;
+    private int weaponNum;
+    private Circle magneticArea;
+
+    public Shop getShop() {
+        return shop;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public int getMoney() {
+        return money;
+    }
 
     public Weapon getCurrentWeapon() {
         return currentWeapon;
@@ -49,20 +77,28 @@ public class Hero {
         return position;
     }
 
-    public int getHp() {
-        return hp;
-    }
-
-    public int getScore() {
-        return score;
-    }
-
-    public int getMoney() {
-        return money;
-    }
-
     public void addScore(int amount) {
         score += amount;
+    }
+
+    public boolean isAlive() {
+        return hp > 0;
+    }
+
+    public boolean isMoneyEnough(int amount) {
+        return money >= amount;
+    }
+
+    public void decreaseMoney(int amount) {
+        money -= amount;
+    }
+
+    public void setPause(boolean pause){
+        gc.setPause(pause);
+    }
+
+    public Circle getMagneticArea() {
+        return magneticArea;
     }
 
     public Hero(GameController gc) {
@@ -74,18 +110,19 @@ public class Hero {
         this.enginePower = 500.0f;
         this.hpMax = 100;
         this.hp = hpMax;
+        this.money = 0;
         this.sb = new StringBuilder();
+        this.shop = new Shop(this);
         this.hitArea = new Circle(position, 29);
-        this.currentWeapon = new Weapon(gc, this, "Laser", 0.1f, 1, 600.0f, 300,
-                new Vector3[]{
-                        new Vector3(28, 0, 0),
-                        new Vector3(28, 90, 20),
-                        new Vector3(28, -90, -20)
-                });
+        this.weaponNum = 0;
+        createWeapons();
+        this.currentWeapon = weapons[weaponNum];
+        this.magneticArea = new Circle(position, 150);
     }
 
     public void renderGUI(SpriteBatch batch, BitmapFont font) {
         sb.setLength(0);
+        sb.append("LEVEL: ").append(gc.getLevel()).append("\n");
         sb.append("SCORE: ").append(scoreView).append("\n");
         sb.append("HP: ").append(hp).append(" / ").append(hpMax).append("\n");
         sb.append("BULLERS: ").append(currentWeapon.getCurBullets()).append(" / ").append(currentWeapon.getMaxBullets()).append("\n");
@@ -103,6 +140,28 @@ public class Hero {
         hp -= amount;
     }
 
+    public boolean upgrade(Skill skill) {
+        switch (skill) {
+            case HP_MAX:
+                hpMax += Skill.HP_MAX.power;
+                return true;
+            case HP:
+                if (hp + Skill.HP.power <= hpMax) {
+                    hp += Skill.HP.power;
+                    return true;
+                }
+                break;
+            case WEAPON:
+                if (weaponNum < weapons.length - 1) {
+                    weaponNum++;
+                    currentWeapon = weapons[weaponNum];
+                    return true;
+                }
+        }
+        return false;
+
+    }
+
     public void consume(PowerUp p) {
         switch (p.getType()) {
             case MEDKIT:
@@ -112,13 +171,12 @@ public class Hero {
                 money += p.getPower();
                 break;
             case AMMOS:
-                currentWeapon.addAmmos( p.getPower()) ;
+                currentWeapon.addAmmos(p.getPower());
                 break;
         }
     }
 
     public void update(float dt) {
-
         fireTimer += dt;
         updateScore(dt);
 
@@ -172,8 +230,13 @@ public class Hero {
 
         }
 
+        if (Gdx.input.isKeyPressed(Input.Keys.P)) {
+            shop.setVisible(true);
+            gc.setPause(true);
+        }
         position.mulAdd(velocity, dt);
         hitArea.setPosition(position);
+        magneticArea.setPosition(position);
 
         float stopKoef = 1.0f - 0.8f * dt;
         if (stopKoef < 0.0f) {
@@ -217,5 +280,42 @@ public class Hero {
             position.y = ScreenManager.SCREEN_HEIGHT - 32f;
             velocity.y *= -0.5f;
         }
+    }
+
+    private void createWeapons() {
+        weapons = new Weapon[]{
+                new Weapon(gc, this, "Laser", 0.2f, 1, 300.0f, 300,
+                        new Vector3[]{
+                                new Vector3(28, 90, 0),
+                                new Vector3(28, -90, 0)
+                        }),
+                new Weapon(gc, this, "Laser", 0.2f, 1, 600.0f, 500,
+                        new Vector3[]{
+                                new Vector3(28, 0, 0),
+                                new Vector3(28, 90, 20),
+                                new Vector3(28, -90, -20)
+                        }),
+                new Weapon(gc, this, "Laser", 0.1f, 1, 600.0f, 1000,
+                        new Vector3[]{
+                                new Vector3(28, 0, 0),
+                                new Vector3(28, 90, 20),
+                                new Vector3(28, -90, -20)
+                        }),
+                new Weapon(gc, this, "Laser", 0.1f, 2, 600.0f, 1000,
+                        new Vector3[]{
+                                new Vector3(28, 90, 0),
+                                new Vector3(28, -90, 0),
+                                new Vector3(28, 90, 15),
+                                new Vector3(28, -90, -15)
+                        }),
+                new Weapon(gc, this, "Laser", 0.1f, 3, 600.0f, 1500,
+                        new Vector3[]{
+                                new Vector3(28, 0, 0),
+                                new Vector3(28, 90, 10),
+                                new Vector3(28, 90, 20),
+                                new Vector3(28, -90, -10),
+                                new Vector3(28, -90, -20)
+                        })
+        };
     }
 }
