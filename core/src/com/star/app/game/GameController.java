@@ -1,5 +1,7 @@
 package com.star.app.game;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.star.app.screen.ScreenManager;
@@ -12,6 +14,8 @@ public class GameController {
     private PowerUpsController powerUpsController;
     private Hero hero;
     private Vector2 tempVec;
+
+    private boolean isPause;
 
     public PowerUpsController getPowerUpsController() {
         return powerUpsController;
@@ -52,9 +56,22 @@ public class GameController {
                     MathUtils.random(-200, 200),
                     MathUtils.random(-200, 200), 1.0f);
         }
+
+        isPause = false;
     }
 
     public void update(float dt) {
+
+        gameKeyControl();
+
+        if (isPause)return;
+
+        if (hero.getHp() <=0) {
+            GameStatistic.getInstance().setMoney(hero.getMoney());
+            GameStatistic.getInstance().setScore(hero.getScore());
+            ScreenManager.getInstance().changeScreen(ScreenManager.ScreenType.GAME_OVER);
+        }
+
         background.update(dt);
         hero.update(dt);
         asteroidController.update(dt);
@@ -121,5 +138,19 @@ public class GameController {
             }
         }
 
+    }
+
+    private void gameKeyControl() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
+            pause();
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            ScreenManager.getInstance().changeScreen(ScreenManager.ScreenType.MENU);
+        }
+    }
+
+    public void pause() {
+        isPause = !isPause;
     }
 }

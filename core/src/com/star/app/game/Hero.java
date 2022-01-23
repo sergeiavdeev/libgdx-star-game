@@ -49,6 +49,18 @@ public class Hero {
         return position;
     }
 
+    public int getHp() {
+        return hp;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public int getMoney() {
+        return money;
+    }
+
     public void addScore(int amount) {
         score += amount;
     }
@@ -106,6 +118,7 @@ public class Hero {
     }
 
     public void update(float dt) {
+
         fireTimer += dt;
         updateScore(dt);
 
@@ -158,6 +171,7 @@ public class Hero {
             }
 
         }
+
         position.mulAdd(velocity, dt);
         hitArea.setPosition(position);
 
