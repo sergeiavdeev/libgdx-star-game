@@ -48,6 +48,11 @@ public class PowerUp implements Poolable {
         return velocity;
     }
 
+    public void setVelocity(Vector2 position) {
+        this.velocity.set(position.x - this.position.x, position.y - this.position.y);
+        this.velocity.nor().scl(150.0f);
+    }
+
     public void deactivate() {
         active = false;
     }
