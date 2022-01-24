@@ -10,10 +10,15 @@ public class Bullet implements Poolable {
     private Vector2 position;
     private Vector2 velocity;
     private boolean active;
+    boolean botBullet;
 
     @Override
     public boolean isActive() {
         return active;
+    }
+
+    public boolean isBotBullet() {
+        return botBullet;
     }
 
     public Vector2 getPosition() {
@@ -29,6 +34,7 @@ public class Bullet implements Poolable {
         this.position = new Vector2(0, 0);
         this.velocity = new Vector2(0, 0);
         this.active = false;
+        this.botBullet = false;
     }
 
     public void deactivate() {
@@ -51,9 +57,10 @@ public class Bullet implements Poolable {
         }
     }
 
-    public void activate(float x, float y, float vx, float vy) {
+    public void activate(float x, float y, float vx, float vy, boolean botBullet) {
         position.set(x, y);
         velocity.set(vx, vy);
         active = true;
+        this.botBullet = botBullet;
     }
 }

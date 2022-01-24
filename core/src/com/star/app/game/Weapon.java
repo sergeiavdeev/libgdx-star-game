@@ -16,6 +16,7 @@ public class Weapon {
     private int maxBullets;
     private int curBullets;
     private Sound shootSound;
+    private boolean  isBot;
 
     // x - растояние от центра
     // y угол от основного направления корабля
@@ -39,7 +40,7 @@ public class Weapon {
     }
 
     public Weapon(GameController gc, Ship ship, String title, float firePeriod, int damage,
-                  float bulletSpeed, int maxBullets, Vector3[] slots) {
+                  float bulletSpeed, int maxBullets, Vector3[] slots, boolean isBot) {
         this.gc = gc;
         this.ship = ship;
         this.title = title;
@@ -50,6 +51,7 @@ public class Weapon {
         this.slots = slots;
         this.curBullets = maxBullets;
         this.shootSound = Assets.getInstance().getAssetManager().get("audio/shoot.mp3");
+        this.isBot = isBot;
     }
 
     public void fire() {
@@ -62,7 +64,7 @@ public class Weapon {
                 y = ship.getPosition().y + MathUtils.sinDeg(ship.getAngle() + slots[i].y) * slots[i].x;
                 vx = ship.getVelocity().x + bulletSpeed * MathUtils.cosDeg(ship.getAngle() + slots[i].z);
                 vy = ship.getVelocity().y + bulletSpeed * MathUtils.sinDeg(ship.getAngle() + slots[i].z);
-                gc.getBulletController().setup(x, y, vx, vy);
+                gc.getBulletController().setup(x, y, vx, vy, isBot);
             }
         }
     }
