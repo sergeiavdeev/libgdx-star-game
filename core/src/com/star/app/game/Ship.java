@@ -31,6 +31,10 @@ public class Ship {
         return angle;
     }
 
+    public void setAngle(float angle) {
+        this.angle = angle;
+    }
+
     public Circle getHitArea() {
         return hitArea;
     }
@@ -110,32 +114,32 @@ public class Ship {
         }
     }
 
-    private void createWeapons() {
+    protected void createWeapons() {
         weapons = new Weapon[]{
                 new Weapon(gc, this, "Laser", 0.2f, 1, 300.0f, 300,
                         new Vector3[]{
                                 new Vector3(28, 90, 0),
                                 new Vector3(28, -90, 0)
-                        }),
+                        }, false),
                 new Weapon(gc, this, "Laser", 0.2f, 1, 600.0f, 500,
                         new Vector3[]{
                                 new Vector3(28, 0, 0),
                                 new Vector3(28, 90, 20),
                                 new Vector3(28, -90, -20)
-                        }),
+                        }, false),
                 new Weapon(gc, this, "Laser", 0.1f, 1, 600.0f, 1000,
                         new Vector3[]{
                                 new Vector3(28, 0, 0),
                                 new Vector3(28, 90, 20),
                                 new Vector3(28, -90, -20)
-                        }),
+                        }, false),
                 new Weapon(gc, this, "Laser", 0.1f, 2, 600.0f, 1000,
                         new Vector3[]{
                                 new Vector3(28, 90, 0),
                                 new Vector3(28, -90, 0),
                                 new Vector3(28, 90, 15),
                                 new Vector3(28, -90, -15)
-                        }),
+                        }, false),
                 new Weapon(gc, this, "Laser", 0.1f, 3, 600.0f, 1500,
                         new Vector3[]{
                                 new Vector3(28, 0, 0),
@@ -143,7 +147,7 @@ public class Ship {
                                 new Vector3(28, 90, 20),
                                 new Vector3(28, -90, -10),
                                 new Vector3(28, -90, -20)
-                        })
+                        }, false)
         };
     }
 }

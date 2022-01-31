@@ -18,6 +18,7 @@ public class GameController {
     private ParticleController particleController;
     private PowerUpsController powerUpsController;
     private InfoController infoController;
+    private BotShipController botShipController;
     private Hero hero;
     private Vector2 tempVec;
     private Stage stage;
@@ -71,6 +72,10 @@ public class GameController {
         return bulletController;
     }
 
+    public BotShipController getBotShipController() {
+        return botShipController;
+    }
+
     public GameController(SpriteBatch batch) {
         this.background = new Background(this);
         this.hero = new Hero(this);
@@ -79,6 +84,7 @@ public class GameController {
         this.particleController = new ParticleController();
         this.powerUpsController = new PowerUpsController(this);
         this.infoController = new InfoController();
+        botShipController = new BotShipController(this);
         this.tempVec = new Vector2();
         this.level = 1;
         this.sb = new StringBuilder();
@@ -90,6 +96,8 @@ public class GameController {
         Gdx.input.setInputProcessor(stage);
 
         generateBigAsteroids(1);
+
+        botShipController.setup(200, 200, 30, 30);
     }
 
     public void generateBigAsteroids(int n) {
@@ -112,8 +120,10 @@ public class GameController {
         bulletController.update(dt);
         particleController.update(dt);
         powerUpsController.update(dt);
+        botShipController.update(dt);
         infoController.update(dt);
         checkCollisions();
+        directBots();
         if (!hero.isAlive()) {
             ScreenManager.getInstance().changeScreen(ScreenManager.ScreenType.GAMEOVER, hero);
         }
@@ -174,6 +184,29 @@ public class GameController {
                     break;
                 }
             }
+
+            if (hero.getHitArea().contains(b.getPosition()) && b.isBotBullet()) {
+                hero.takeDamage(1);
+                particleController.setup(b.getPosition().x + MathUtils.random(-4, 4), b.getPosition().y + MathUtils.random(-4, 4),
+                        b.getVelocity().x * -0.3f + MathUtils.random(-30, 30), b.getVelocity().y * -0.3f + MathUtils.random(-30, 30),
+                        0.2f, 2.2f, 1.5f,
+                        1.0f, 1.0f, 1.0f, 1,
+                        0, 0, 1, 0);
+            }
+
+            if (b.isBotBullet()) continue;
+
+            for (int k = 0; k < botShipController.getActiveList().size(); k++) {
+
+                BotShip bot = botShipController.getActiveList().get(k);
+                if (bot.getHitArea().contains(b.getPosition())) {
+                    bot.takeDamage(5);
+                    b.deactivate();
+                    if (!bot.isAlive()) {
+                        bot.deactivate();
+                    }
+                }
+            }
         }
 
         for (int i = 0; i < powerUpsController.getActiveList().size(); i++) {
@@ -190,6 +223,20 @@ public class GameController {
             }
         }
 
+    }
+
+    private void directBots() {
+        for (int i = 0; i < botShipController.getActiveList().size(); i++) {
+            Vector2 direction = new Vector2();
+            BotShip bot = botShipController.getActiveList().get(i);
+            direction.set(hero.getPosition()).sub(bot.getPosition()).nor();
+            bot.setAngle(direction.angleDeg());
+            bot.setVelocity(direction.scl(100));
+
+            if (bot.getFireArea().overlaps(hero.getHitArea())) {
+                bot.tryToFire();
+            }
+        }
     }
 
     public void dispose() {
